@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ddns-updater
+  namespace: ddns-updater
+  labels:
+    app: ddns-updater
+spec:
+  selector:
+    matchLabels:
+      app: ddns-updater
+  replicas: 1
+  template:
+    metadata:
+      name: ddns-updater
+      namespace: ddns-updater
+      labels:
+        app: ddns-updater
+    spec:
+      volumes:
+      - name: ddns-updater-data
+        persistentVolumeClaim:
+          claimName: ddns-updater-pvc
+      containers:
+      - name: ddns-updater
+        image: qmcgaw/ddns-updater
+        volumeMounts:
+        - name: ddns-updater-data
+          mountPath: /updater/data
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PERIOD
+          value: 5m
+        - name: UPDATE_COOLDOWN_PERIOD
+          value: 5m
+        - name: PUBLICIP_FETCHERS
+          value: all
+        - name: PUBLICIP_HTTP_PROVIDERS
+          value: all
+        - name: PUBLICIPV4_HTTP_PROVIDERS
+          value: all
+        - name: PUBLICIPV6_HTTP_PROVIDERS
+          value: all
+        - name: PUBLICIP_DNS_PROVIDERS
+          value: all
+        - name: PUBLICIP_DNS_TIMEOUT
+          value: 3s
+        - name: HTTP_TIMEOUT
+          value: 10s
+        - name: LISTENING_PORT
+          value: "8000"
+        - name: HOST_PORT
+          value: "8000"
+        - name: ROOT_URL
+          value: "/"
+        - name: BACKUP_PERIOD
+          value: "0" # 0 to disable
+        - name: BACKUP_DIRECTORY
+          value: /updater/data
+        - name: LOG_LEVEL
+          value: info
+        - name: LOG_CALLER
+          value: hidden
